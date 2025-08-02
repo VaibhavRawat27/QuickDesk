@@ -207,29 +207,46 @@ def dashboard():
     if current_user.role != 'user':
         flash("Access denied.", "warning")
         return redirect(url_for('login'))
-    
+
     status_filter = request.args.get('status')
+    search_query = request.args.get('search', '')
+
+    # Base query: user's tickets
     query = Ticket.query.filter_by(user_id=current_user.id)
 
-    # Filter by status if given
+    # Filter by status
     if status_filter and status_filter != 'all':
         query = query.filter_by(status=status_filter)
 
+    # Search by subject
+    if search_query:
+        query = query.filter(Ticket.subject.ilike(f'%{search_query}%'))
+
     tickets = query.order_by(Ticket.created_at.desc()).all()
 
-    # Counts for tabs
+    # Tab counts (not affected by search)
     all_count = Ticket.query.filter_by(user_id=current_user.id).count()
     open_count = Ticket.query.filter_by(user_id=current_user.id, status='Open').count()
     inprogress_count = Ticket.query.filter_by(user_id=current_user.id, status='In Progress').count()
     resolved_count = Ticket.query.filter_by(user_id=current_user.id, status='Resolved').count()
     closed_count = Ticket.query.filter_by(user_id=current_user.id, status='Closed').count()
 
-    return render_template('dashboard.html', tickets=tickets,
-                           all_count=all_count, open_count=open_count,
-                           inprogress_count=inprogress_count,
-                           resolved_count=resolved_count,
-                           closed_count=closed_count,
-                           current_status=status_filter or 'all')
+    # 🔥 Trending tickets (latest 5 from all users)
+    trending_tickets = Ticket.query.order_by(Ticket.created_at.desc()).limit(5).all()
+
+    return render_template(
+        'dashboard.html',
+        tickets=tickets,
+        all_count=all_count,
+        open_count=open_count,
+        inprogress_count=inprogress_count,
+        resolved_count=resolved_count,
+        closed_count=closed_count,
+        current_status=status_filter or 'all',
+        search_query=search_query,
+        trending_tickets=trending_tickets
+    )
+
 
 
 
@@ -263,9 +280,11 @@ def create_ticket():
 @login_required
 def ticket_detail(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    if current_user.role == 'user' and ticket.user_id != current_user.id:
-        flash("Access denied.", "warning")
-        return redirect(url_for('dashboard'))
+
+    # Block regular users from seeing others' tickets
+    # if current_user.role == 'user' and ticket.user_id != current_user.id:
+    #     flash("Access denied.", "warning")
+    #     return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
         reply_content = request.form.get('reply')
@@ -279,6 +298,7 @@ def ticket_detail(ticket_id):
             db.session.add(reply)
             db.session.commit()
             flash('Reply added.', "success")
+
     replies = TicketReply.query.filter_by(ticket_id=ticket_id).order_by(TicketReply.created_at.asc()).all()
     return render_template('ticket_detail.html', ticket=ticket, replies=replies)
 

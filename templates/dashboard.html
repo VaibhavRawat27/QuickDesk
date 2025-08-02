@@ -6,36 +6,23 @@
   <a href="{{ url_for('create_ticket') }}" class="btn btn-primary">Create Ticket</a>
 </div>
 
+<!-- 🔍 Search Bar -->
+<form method="GET" action="{{ url_for('dashboard') }}" class="mb-4">
+  <input type="text" name="search" placeholder="Search by subject..." class="form-control" value="{{ request.args.get('search', '') }}">
+</form>
+
 <!-- Filter Tabs -->
 <ul class="nav nav-pills mb-4">
+  {% for label, count in [('all', all_count), ('Open', open_count), ('In Progress', inprogress_count), ('Resolved', resolved_count), ('Closed', closed_count)] %}
   <li class="nav-item">
-    <a class="nav-link {% if current_status == 'all' %}active{% endif %}" href="{{ url_for('dashboard', status='all') }}">
-      All ({{ all_count }})
+    <a class="nav-link {% if current_status == label %}active{% endif %}" href="{{ url_for('dashboard', status=label) }}">
+      {{ label }} ({{ count }})
     </a>
   </li>
-  <li class="nav-item">
-    <a class="nav-link {% if current_status == 'Open' %}active{% endif %}" href="{{ url_for('dashboard', status='Open') }}">
-      Open ({{ open_count }})
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% if current_status == 'In Progress' %}active{% endif %}" href="{{ url_for('dashboard', status='In Progress') }}">
-      In Progress ({{ inprogress_count }})
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% if current_status == 'Resolved' %}active{% endif %}" href="{{ url_for('dashboard', status='Resolved') }}">
-      Resolved ({{ resolved_count }})
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% if current_status == 'Closed' %}active{% endif %}" href="{{ url_for('dashboard', status='Closed') }}">
-      Closed ({{ closed_count }})
-    </a>
-  </li>
+  {% endfor %}
 </ul>
 
-<!-- Tickets Table -->
+<!-- 🎫 Tickets Table -->
 <table class="table table-striped">
   <thead>
     <tr>
@@ -52,13 +39,66 @@
     <tr>
       <td>{{ ticket.id }}</td>
       <td>{{ ticket.subject }}</td>
-      <td><span class="badge bg-secondary">{{ ticket.status }}</span></td>
-      <td>{{ ticket.category }}</td>
+      <td>
+        {% if ticket.status == 'Open' %}
+        <span class="badge bg-danger">🔓 Open</span>
+        {% elif ticket.status == 'In Progress' %}
+        <span class="badge bg-warning text-dark">🔧 In Progress</span>
+        {% elif ticket.status == 'Resolved' %}
+        <span class="badge bg-success">✅ Resolved</span>
+        {% elif ticket.status == 'Closed' %}
+        <span class="badge bg-secondary">🔒 Closed</span>
+        {% else %}
+        <span class="badge bg-dark">{{ ticket.status }}</span>
+        {% endif %}
+      </td>
+      <td>{{ ticket.category or '—' }}</td>
       <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
       <td><a class="btn btn-sm btn-outline-info" href="{{ url_for('ticket_detail', ticket_id=ticket.id) }}">View</a></td>
     </tr>
     {% else %}
     <tr><td colspan="6" class="text-center">No tickets found for this status.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- 🔥 Trending Tickets Section -->
+<h4 class="mt-5">🔥 Trending Tickets (Latest)</h4>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Subject</th>
+      <th>User</th>
+      <th>Status</th>
+      <th>Created</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in trending_tickets %}
+    <tr>
+      <td>{{ t.id }}</td>
+      <td>{{ t.subject }}</td>
+      <td>{{ t.owner.name }}</td>
+      <td>
+        {% if t.status == 'Open' %}
+        <span class="badge bg-danger">🔓 Open</span>
+        {% elif t.status == 'In Progress' %}
+        <span class="badge bg-warning text-dark">🔧 In Progress</span>
+        {% elif t.status == 'Resolved' %}
+        <span class="badge bg-success">✅ Resolved</span>
+        {% elif t.status == 'Closed' %}
+        <span class="badge bg-secondary">🔒 Closed</span>
+        {% else %}
+        <span class="badge bg-dark">{{ t.status }}</span>
+        {% endif %}
+      </td>
+      <td>{{ t.created_at.strftime('%Y-%m-%d') }}</td>
+      <td><a href="{{ url_for('ticket_detail', ticket_id=t.id) }}" class="btn btn-sm btn-info">View</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="text-center">No trending tickets available.</td></tr>
     {% endfor %}
   </tbody>
 </table>
