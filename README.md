@@ -31,6 +31,13 @@ and support teams without unnecessary complexity
 - Includes upvote/downvote feedback on tickets.
 - Role-based access and personalized dashboards.
 - Features full search, filter, and status tracking.
+- AI-Powered Automation
+- Auto-Closure of Invalid Tickets
+
+Tickets with inappropriate language are immediately auto-closed.
+Tickets with gibberish or irrelevant content (like "asdf", "hi", "test") are auto-rejected.
+Admins and agents are notified of such tickets.
+This smart handling ensures cleaner ticket queues and faster resolution cycles.
 
 ---
 
