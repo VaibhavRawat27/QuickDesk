@@ -325,6 +325,8 @@ def logout():
     return redirect(url_for('login'))
 
 
+
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -332,34 +334,42 @@ def dashboard():
         flash("Access denied.", "warning")
         return redirect(url_for('login'))
 
+    # Get filter parameters from query string
     status_filter = request.args.get('status', 'all')
     search = request.args.get('search', '').strip()
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
+    category_filter = request.args.get('category', '')
     sort_order = request.args.get('sort', 'desc')  # 'asc' or 'desc'
 
+    # Start base query
     query = Ticket.query.filter_by(user_id=current_user.id)
 
+    # Apply filters
     if status_filter != 'all':
         query = query.filter_by(status=status_filter)
 
     if search:
         query = query.filter(Ticket.subject.ilike(f'%{search}%'))
 
+    if category_filter:
+        query = query.filter(Ticket.category == category_filter)
+
     if start_date:
         try:
             start = datetime.strptime(start_date, '%Y-%m-%d')
             query = query.filter(Ticket.created_at >= start)
-        except:
+        except ValueError:
             pass
 
     if end_date:
         try:
             end = datetime.strptime(end_date, '%Y-%m-%d')
             query = query.filter(Ticket.created_at <= end)
-        except:
+        except ValueError:
             pass
 
+    # Sorting
     if sort_order == 'asc':
         query = query.order_by(Ticket.created_at.asc())
     else:
@@ -367,33 +377,29 @@ def dashboard():
 
     tickets = query.all()
 
-    category_filter = request.args.get('category')
-    if category_filter:
-        query = query.filter(Ticket.category == category_filter)
-
-    categories = Category.query.all()  # ✅ Pass this to the template
-
-    # Counts for tabs
+    # Ticket counts per status for tab display
     all_count = Ticket.query.filter_by(user_id=current_user.id).count()
     open_count = Ticket.query.filter_by(user_id=current_user.id, status='Open').count()
     inprogress_count = Ticket.query.filter_by(user_id=current_user.id, status='In Progress').count()
     resolved_count = Ticket.query.filter_by(user_id=current_user.id, status='Resolved').count()
     closed_count = Ticket.query.filter_by(user_id=current_user.id, status='Closed').count()
 
-    return render_template('dashboard.html',
-                       tickets=tickets,
-                       categories=categories,
-                       all_count=all_count,
-                       open_count=open_count,
-                       inprogress_count=inprogress_count,
-                       resolved_count=resolved_count,
-                       closed_count=closed_count,
-                       current_status=status_filter,
-                       search=search,
-                       sort_order=sort_order,
-                       start_date=start_date,
-                       end_date=end_date)
+    categories = Category.query.all()
 
+    return render_template('dashboard.html',
+                           tickets=tickets,
+                           categories=categories,
+                           all_count=all_count,
+                           open_count=open_count,
+                           inprogress_count=inprogress_count,
+                           resolved_count=resolved_count,
+                           closed_count=closed_count,
+                           current_status=status_filter,
+                           search=search,
+                           sort_order=sort_order,
+                           start_date=start_date,
+                           end_date=end_date,
+                           category_filter=category_filter)
 
 
 
