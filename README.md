@@ -243,7 +243,10 @@ User → Create Ticket → Assigned to Agent → Agent Responds → Status Updat
 
 ## 🙌 Declaration & Acknowledgement 
 
-I have completed this project during odoo x cgc hackathon on 2nd August 2025 during time spam of 9 am to 5 pm.
-
-I acknowledge i have used internet and ai tools, but these tools are only used to do research. I am well aware of all the code i used and know what it work exactly.
+- I hereby declare that I have completed this project during the Odoo x CGC Hackathon held on 2nd August 2025, within the designated time frame of 9:00 AM to 5:00 PM.
+- While I have utilized the internet and AI-based tools for research and reference purposes, I affirm that:
+- All work presented is my own.
+- I fully understand the code and logic implemented in the project.
+- No part of the project was blindly copied or misused.
+- This declaration confirms both the originality of my contribution and my understanding of the tools and techniques used.
 
