@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Manage Ticket #{{ ticket.id }} – {{ ticket.subject }}</h2>
+
+<div class="card p-3 mb-4">
+  <h5 class="mb-2"><strong>User:</strong> {{ ticket.owner.name }}</h5>
+  <p><strong>Status:</strong> {{ ticket.status }}</p>
+  <p><strong>Category:</strong> {{ ticket.category }}</p>
+  <p><strong>Created At:</strong> {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+  {% if ticket.attachment %}
+    <p><strong>Attachment:</strong></p>
+    <a href="/uploads/{{ ticket.attachment }}" target="_blank">
+      <img src="/uploads/{{ ticket.attachment }}" alt="Attachment" style="max-width: 400px; border-radius: 8px; border: 1px solid #ccc;">
+    </a>
+  {% endif %}
+</div>
+
+<!-- Update Status Form -->
+<form method="POST" action="{{ url_for('agent_ticket_detail', ticket_id=ticket.id) }}">
+  <div class="mb-3">
+    <label><strong>Change Status</strong></label>
+    <select name="status" class="form-select">
+      <option value="Open" {% if ticket.status == 'Open' %}selected{% endif %}>Open</option>
+      <option value="In Progress" {% if ticket.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+      <option value="Resolved" {% if ticket.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+      <option value="Closed" {% if ticket.status == 'Closed' %}selected{% endif %}>Closed</option>
+    </select>
+  </div>
+  <button class="btn btn-warning" name="action" value="update_status">Update Status</button>
+</form>
+
+<hr>
+
+<!-- Reply Form -->
+<form method="POST" action="{{ url_for('agent_ticket_detail', ticket_id=ticket.id) }}">
+  <div class="mb-3">
+    <label for="reply"><strong>Add Reply</strong></label>
+    <textarea name="reply" id="reply" class="form-control" required></textarea>
+  </div>
+  <button class="btn btn-primary" name="action" value="add_reply">Post Reply</button>
+</form>
+
+<hr>
+
+<h4>Previous Replies</h4>
+<ul class="list-group mb-4">
+  {% for reply in replies %}
+    <li class="list-group-item">
+      <strong>{{ reply.author_name }}</strong>: {{ reply.content }}<br>
+      <small class="text-muted">{{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

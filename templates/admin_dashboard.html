@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Admin Dashboard</h2>
+
+<!-- USER ROLE FILTER TABS -->
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item">
+    <a class="nav-link {% if current_user_role == 'all' %}active{% endif %}" href="{{ url_for('admin_dashboard', user_role='all', status=current_status) }}">
+      All ({{ total_users }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_user_role == 'user' %}active{% endif %}" href="{{ url_for('admin_dashboard', user_role='user', status=current_status) }}">
+      Employees ({{ employee_count }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_user_role == 'agent' %}active{% endif %}" href="{{ url_for('admin_dashboard', user_role='agent', status=current_status) }}">
+      Support Agents ({{ agent_count }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_user_role == 'admin' %}active{% endif %}" href="{{ url_for('admin_dashboard', user_role='admin', status=current_status) }}">
+      Admins ({{ admin_count }})
+    </a>
+  </li>
+</ul>
+
+<!-- USERS SECTION -->
+<h4>All Users</h4>
+<table class="table table-bordered mb-5">
+  <thead class="table-light">
+    <tr>
+      <th>ID</th>
+      <th>Email</th>
+      <th>Name</th>
+      <th>Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+    <tr>
+      <td>{{ user.id }}</td>
+      <td>{{ user.email }}</td>
+      <td>{{ user.name }}</td>
+      <td>{{ user.role }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- FILTER TABS FOR TICKETS -->
+<ul class="nav nav-pills mb-3">
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'all' %}active{% endif %}" href="{{ url_for('admin_dashboard', status='all') }}">
+      All ({{ all_count }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'Open' %}active{% endif %}" href="{{ url_for('admin_dashboard', status='Open') }}">
+      Open ({{ open_count }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'In Progress' %}active{% endif %}" href="{{ url_for('admin_dashboard', status='In Progress') }}">
+      In Progress ({{ inprogress_count }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'Resolved' %}active{% endif %}" href="{{ url_for('admin_dashboard', status='Resolved') }}">
+      Resolved ({{ resolved_count }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'Closed' %}active{% endif %}" href="{{ url_for('admin_dashboard', status='Closed') }}">
+      Closed ({{ closed_count }})
+    </a>
+  </li>
+</ul>
+
+<!-- TICKETS TABLE -->
+<h4>Tickets</h4>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Subject</th>
+      <th>User</th>
+      <th>Status</th>
+      <th>Created At</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ticket in tickets %}
+    <tr>
+      <td>{{ ticket.id }}</td>
+      <td>{{ ticket.subject }}</td>
+      <td>{{ ticket.owner.name }}</td>
+      <td><span class="badge bg-secondary">{{ ticket.status }}</span></td>
+      <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="text-center">No tickets found for this status.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

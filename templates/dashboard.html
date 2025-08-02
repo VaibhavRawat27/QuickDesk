@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Your Tickets</h2>
+  <a href="{{ url_for('create_ticket') }}" class="btn btn-primary">Create Ticket</a>
+</div>
+
+<!-- Filter Tabs -->
+<ul class="nav nav-pills mb-4">
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'all' %}active{% endif %}" href="{{ url_for('dashboard', status='all') }}">
+      All ({{ all_count }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'Open' %}active{% endif %}" href="{{ url_for('dashboard', status='Open') }}">
+      Open ({{ open_count }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'In Progress' %}active{% endif %}" href="{{ url_for('dashboard', status='In Progress') }}">
+      In Progress ({{ inprogress_count }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'Resolved' %}active{% endif %}" href="{{ url_for('dashboard', status='Resolved') }}">
+      Resolved ({{ resolved_count }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_status == 'Closed' %}active{% endif %}" href="{{ url_for('dashboard', status='Closed') }}">
+      Closed ({{ closed_count }})
+    </a>
+  </li>
+</ul>
+
+<!-- Tickets Table -->
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Subject</th>
+      <th>Status</th>
+      <th>Category</th>
+      <th>Created At</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ticket in tickets %}
+    <tr>
+      <td>{{ ticket.id }}</td>
+      <td>{{ ticket.subject }}</td>
+      <td><span class="badge bg-secondary">{{ ticket.status }}</span></td>
+      <td>{{ ticket.category }}</td>
+      <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
+      <td><a class="btn btn-sm btn-outline-info" href="{{ url_for('ticket_detail', ticket_id=ticket.id) }}">View</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="text-center">No tickets found for this status.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
