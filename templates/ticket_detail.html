@@ -32,7 +32,21 @@
     <li class="list-group-item">
       <strong>{{ reply.author_name }}</strong>: {{ reply.content }}<br>
       <small class="text-muted">{{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+
+      <div class="mt-2">
+        <form action="{{ url_for('vote_reply', reply_id=reply.id, vote_type='upvote') }}" method="post" style="display:inline;">
+          <button class="btn btn-sm btn-outline-success" title="Upvote">👍</button>
+        </form>
+        <span class="me-3">{{ reply.votes | selectattr('vote_type', 'equalto', 'upvote') | list | length }}</span>
+
+        <form action="{{ url_for('vote_reply', reply_id=reply.id, vote_type='downvote') }}" method="post" style="display:inline;">
+          <button class="btn btn-sm btn-outline-danger" title="Downvote">👎</button>
+        </form>
+        <span>{{ reply.votes | selectattr('vote_type', 'equalto', 'downvote') | list | length }}</span>
+      </div>
     </li>
+  {% else %}
+    <li class="list-group-item text-center text-muted">No replies yet.</li>
   {% endfor %}
 </ul>
 

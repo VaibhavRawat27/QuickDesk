@@ -82,6 +82,16 @@ class TicketReply(db.Model):
     author_name = db.Column(db.String(150), nullable=False)  # ✅ store reply author name
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    votes = db.relationship('ReplyVote', backref='reply', lazy=True)
+
+
+class ReplyVote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    reply_id = db.Column(db.Integer, db.ForeignKey('ticket_reply.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    vote_type = db.Column(db.String(10))  # 'upvote' or 'downvote'
+
+    __table_args__ = (db.UniqueConstraint('reply_id', 'user_id', name='unique_reply_vote'),)
 
 
 # --- Login loader ---
@@ -109,6 +119,28 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
+
+@app.route('/reply/<int:reply_id>/vote/<string:vote_type>', methods=['POST'])
+@login_required
+def vote_reply(reply_id, vote_type):
+    reply = TicketReply.query.get_or_404(reply_id)
+    if vote_type not in ['upvote', 'downvote']:
+        flash('Invalid vote type.', 'danger')
+        return redirect(url_for('ticket_detail', ticket_id=reply.ticket_id))
+
+    existing_vote = ReplyVote.query.filter_by(reply_id=reply_id, user_id=current_user.id).first()
+
+    if existing_vote:
+        if existing_vote.vote_type == vote_type:
+            db.session.delete(existing_vote)  # Remove vote if same
+        else:
+            existing_vote.vote_type = vote_type  # Change vote
+    else:
+        vote = ReplyVote(reply_id=reply_id, user_id=current_user.id, vote_type=vote_type)
+        db.session.add(vote)
+
+    db.session.commit()
+    return redirect(url_for('ticket_detail', ticket_id=reply.ticket_id))
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -352,6 +384,7 @@ def ticket_detail(ticket_id):
             flash('Reply added.', "success")
 
     replies = TicketReply.query.filter_by(ticket_id=ticket_id).order_by(TicketReply.created_at.asc()).all()
+
     return render_template('ticket_detail.html', ticket=ticket, replies=replies)
 
 
