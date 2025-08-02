@@ -1,4 +1,4 @@
-# 📄 QuickDesk – Ticketing Helpdesk System
+## QuickDesk
 
 A modern, role-based support ticketing platform for organizations. QuickDesk lets users (employees) create support tickets, while agents and admins manage and resolve them through a streamlined dashboard.
 
@@ -10,6 +10,39 @@ The purpose of QuickDesk is to provide a simple, easy-to-use help desk solution
 where users can raise support tickets, and support staff can manage and resolve
 them efficiently. The system aims to streamline communication between users
 and support teams without unnecessary complexity
+
+---
+
+## Snapshots
+
+<img width="1365" height="616" alt="image" src="https://github.com/user-attachments/assets/cc15ab9c-03df-4655-a8c0-6780c80b5059" />
+
+<img width="1356" height="610" alt="image" src="https://github.com/user-attachments/assets/51f68ebc-c114-42c4-ba8c-831ff725894d" />
+
+<img width="1352" height="616" alt="image" src="https://github.com/user-attachments/assets/72fd5a90-4638-43a5-9b24-3a168d615245" />
+
+<img width="1365" height="624" alt="image" src="https://github.com/user-attachments/assets/f1863e70-41bb-4cf5-9e85-6fe0a957cb7f" />
+
+<img width="1359" height="619" alt="image" src="https://github.com/user-attachments/assets/6edb5326-6895-4841-a05e-894691dd3d99" />
+
+<img width="1342" height="624" alt="image" src="https://github.com/user-attachments/assets/8c426d06-baa8-4432-8bc6-098d41c86252" />
+
+<img width="1339" height="444" alt="image" src="https://github.com/user-attachments/assets/3bcb0661-7622-4c97-a75d-1f5f7e1aed8d" />
+
+<img width="1346" height="625" alt="image" src="https://github.com/user-attachments/assets/172252cb-e577-47c6-bf47-54223eddfa09" />
+
+<img width="1344" height="625" alt="image" src="https://github.com/user-attachments/assets/21d93848-334e-47be-a7d7-2ddb133f839d" />
+
+<img width="1340" height="622" alt="image" src="https://github.com/user-attachments/assets/4c12c64e-10ce-46ce-ba08-f1c22eafdb9a" />
+
+<img width="1363" height="614" alt="image" src="https://github.com/user-attachments/assets/146d0a6d-e636-4995-a943-ccacfbbeb878" />
+
+<img width="1364" height="631" alt="image" src="https://github.com/user-attachments/assets/30f8c3a6-abb1-4a2f-afd4-74f09361d717" />
+
+<img width="1362" height="610" alt="image" src="https://github.com/user-attachments/assets/4f164c1a-4459-4c62-bc64-e85fcdbfd14f" />
+
+
+
 
 ---
 
