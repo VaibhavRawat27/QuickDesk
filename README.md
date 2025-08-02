@@ -95,16 +95,8 @@ quickdesk/
 ### 1. 🔃 Clone the Repo
 
 ```bash
-git clone https://github.com/yourusername/quickdesk.git
+git clone https://github.com/vaibhavrawat27/quickdesk.git
 cd quickdesk
-```
-
-### 2. 🐍 Set Up Virtual Environment
-
-```bash
-python -m venv venv
-source venv/bin/activate     # Linux/Mac
-venv\Scripts\activate      # Windows
 ```
 
 ### 3. 🧩 Install Dependencies
@@ -113,14 +105,11 @@ venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 ```
 
-### 4. 🔐 Environment Variables
-
-Create a `.env` file (or set in terminal):
+### 4. 🔐 Set up MAIL Passowrd for email notification system
 
 ```
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-app-password
-SECRET_KEY=any-random-string
 ```
 
 ### 5. 🗃️ Initialize the Database
@@ -189,7 +178,7 @@ User → Create Ticket → Assigned to Agent → Agent Responds → Status Updat
 
 1. Enable **2-Step Verification** for your Gmail account.
 2. Generate an **App Password** from Google Account > Security > App Passwords.
-3. Add it to your `.env` or config.
+3. Add it to your `.env` or make changes in config.
 
 ---
 
