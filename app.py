@@ -2,7 +2,15 @@ import os
 from datetime import datetime
 from functools import wraps
 from mail_utils import init_mail, send_email
+from better_profanity import profanity
+profanity.load_censor_words()
 
+def is_gibberish(text):
+    cleaned = text.strip().lower()
+    return len(cleaned) < 10 or cleaned in ['hi', 'hello', 'asdf', 'help', 'test']
+
+def contains_abuse(text):
+    return profanity.contains_profanity(text)
 
 from flask import (
     Flask, render_template, redirect, url_for, request,
@@ -393,6 +401,17 @@ def dashboard():
 @login_required
 def create_ticket():
     if request.method == 'POST':
+        subject = request.form['subject']
+        description = request.form['description']
+        category = request.form['category']
+        if is_gibberish(subject + " " + description):
+            status = 'Closed'
+            flash("Ticket auto-closed: content too short or invalid.", "warning")
+        elif contains_abuse(description):
+            status = 'Closed'
+            flash("Ticket auto-closed due to inappropriate language.", "danger")
+        else:
+            status = 'Open'
         file = request.files.get('attachment')
         filename = None
         if file and file.filename:
@@ -400,14 +419,15 @@ def create_ticket():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
         ticket = Ticket(
-            subject=request.form['subject'],
-            description=request.form['description'],
-            category=request.form['category'],
-            attachment=filename,
-            user_id=current_user.id,
-            user_name=current_user.name,
-            status='Open'
+        subject=subject,
+        description=description,
+        category=category,
+        attachment=filename,
+        user_id=current_user.id,
+        user_name=current_user.name,
+        status=status
         )
+
         db.session.add(ticket)
         db.session.commit()
        
