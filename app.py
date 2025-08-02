@@ -30,7 +30,7 @@ app.config.update(
     MAIL_PORT=587,
     MAIL_USE_TLS=True,
     MAIL_USERNAME='rawatvaibhav27@gmail.com',  # your Gmail address
-    MAIL_PASSWORD='',  # get this from Google
+    MAIL_PASSWORD='',  # Enter the Mail Password generated https://myaccount.google.com/apppasswords
     MAIL_DEFAULT_SENDER='rawatvaibhav27@gmail.com'
 )
 
@@ -115,6 +115,30 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    if request.method == 'POST':
+        new_name = request.form.get('name')
+        old_password = request.form.get('old_password')
+        new_password = request.form.get('new_password')
+
+        if new_name:
+            current_user.name = new_name
+
+        if old_password and new_password:
+            if current_user.check_password(old_password):
+                current_user.set_password(new_password)
+                flash('Password updated successfully.', 'success')
+            else:
+                flash('Old password is incorrect.', 'danger')
+
+        db.session.commit()
+        flash('Profile updated.', 'info')
+        return redirect(url_for('profile'))
+
+    return render_template('profile.html')
+
 # --- Role protection ---
 def role_required(role_name):
     def wrapper(f):
@@ -126,6 +150,31 @@ def role_required(role_name):
             return f(*args, **kwargs)
         return decorated_function
     return wrapper
+
+@app.route('/delete_account', methods=['POST'])
+@login_required
+def delete_account():
+    password = request.form.get('password')
+    confirm = request.form.get('confirmation')
+
+    if not password or not confirm:
+        flash("Both password and confirmation are required.", "danger")
+        return redirect(url_for('profile'))
+
+    if confirm.strip().upper() != "CONFIRM":
+        flash("Please type 'CONFIRM' correctly.", "danger")
+        return redirect(url_for('profile'))
+
+    if not check_password_hash(current_user.password, password):
+        flash("Incorrect password.", "danger")
+        return redirect(url_for('profile'))
+
+    # Proceed to delete
+    db.session.delete(current_user)
+    db.session.commit()
+    flash("Account deleted successfully.", "info")
+    return redirect(url_for('logout'))
+
 
 
 # --- Routes ---
