@@ -30,7 +30,7 @@ app.config.update(
     MAIL_PORT=587,
     MAIL_USE_TLS=True,
     MAIL_USERNAME='rawatvaibhav27@gmail.com',  # your Gmail address
-    MAIL_PASSWORD='javswxmalmoflmme',  # get this from Google
+    MAIL_PASSWORD='',  # get this from Google
     MAIL_DEFAULT_SENDER='rawatvaibhav27@gmail.com'
 )
 
