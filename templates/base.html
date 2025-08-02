@@ -32,7 +32,11 @@
     </div>
     {% else %}
     <div class="ms-auto">
-      <a class="btn btn-outline-light btn-sm" href="{{ url_for('login') }}">Login</a>
+      {% if request.endpoint == 'login' %}
+        <a class="btn btn-outline-light btn-sm" href="{{ url_for('register') }}">Register</a>
+      {% else %}
+        <a class="btn btn-outline-light btn-sm" href="{{ url_for('login') }}">Login</a>
+      {% endif %}
     </div>
     {% endif %}
   </nav>

@@ -1,6 +1,31 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <h2>Create New Ticket</h2>
+
+<!-- ✅ Flash message -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div id="success-msg" class="alert alert-{{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+    
+    <!-- ✅ JavaScript to auto-close or redirect -->
+    <script>
+      setTimeout(() => {
+        // Option 1: Close the form
+        document.querySelector('form').style.display = 'none';
+
+        // Option 2: Redirect (Uncomment if needed)
+        // window.location.href = '/dashboard';  // or any page like 'my_tickets'
+
+      }, 3000); // ⏱️ 3 seconds
+    </script>
+  {% endif %}
+{% endwith %}
+
 <form method="POST" enctype="multipart/form-data">
   <div class="mb-3">
     <label>Subject</label>
@@ -16,7 +41,7 @@
       <option value="Technical">Technical</option>
       <option value="Billing">Billing</option>
       <option value="General">General</option>
-      <option value="General">other</option>
+      <option value="Other">Other</option>
     </select>
   </div>
   <div class="mb-3">
@@ -25,4 +50,5 @@
   </div>
   <button type="submit" class="btn btn-success">Submit Ticket</button>
 </form>
+
 {% endblock %}
