@@ -15,7 +15,7 @@ and support teams without unnecessary complexity
 
 ## Architecture
 
-<img width="661" height="493" alt="archiecture" src="https://github.com/user-attachments/assets/85597443-35b4-4abd-ae53-f9feb820ea97" />
+<img width="661" height="493" alt="Untitled Diagram drawio (3)" src="https://github.com/user-attachments/assets/a034bf29-5a9c-4b60-a1ec-636f98f3c0c9" />
 
 --- 
 
