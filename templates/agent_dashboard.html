@@ -2,48 +2,47 @@
 {% block content %}
 <h2>Support Agent Dashboard</h2>
 
-<!-- 🔍 Search Tickets -->
-<form method="GET" action="{{ url_for('agent_dashboard') }}" class="mb-3 d-flex">
-  <input type="text" name="search" class="form-control me-2" placeholder="Search by subject or user..." value="{{ request.args.get('search', '') }}">
-  <button class="btn btn-outline-primary" type="submit">Search</button>
+<!-- 🔍 Search + Category Filter -->
+<form method="GET" action="{{ url_for('agent_dashboard') }}" class="row g-3 mb-4 align-items-end">
+  <div class="col-md-4">
+    <input type="text" name="search" class="form-control" placeholder="Search by subject or user..."
+           value="{{ search_query }}">
+  </div>
+  <div class="col-md-4">
+    <select name="category" class="form-select">
+      <option value="">🔍 Filter by Category</option>
+      {% for cat in categories %}
+      <option value="{{ cat.name }}" {% if selected_category == cat.name %}selected{% endif %}>
+        {{ cat.name }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-outline-primary w-100" type="submit">Apply Filters</button>
+  </div>
 </form>
 
-<!-- Filter Tabs -->
+<!-- 🏷️ Status Filter Tabs -->
 <ul class="nav nav-pills mb-4">
+  {% for status, count in [('all', all_count), ('Open', open_count), ('In Progress', inprogress_count), ('Resolved', resolved_count), ('Closed', closed_count)] %}
   <li class="nav-item">
-    <a class="nav-link {% if current_status == 'all' %}active{% endif %}" href="{{ url_for('agent_dashboard', status='all') }}">
-      All ({{ all_count }})
+    <a class="nav-link {% if current_status == status %}active{% endif %}"
+       href="{{ url_for('agent_dashboard', status=status, category=selected_category, search=search_query) }}">
+      {{ status }} ({{ count }})
     </a>
   </li>
-  <li class="nav-item">
-    <a class="nav-link {% if current_status == 'Open' %}active{% endif %}" href="{{ url_for('agent_dashboard', status='Open') }}">
-      Open ({{ open_count }})
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% if current_status == 'In Progress' %}active{% endif %}" href="{{ url_for('agent_dashboard', status='In Progress') }}">
-      In Progress ({{ inprogress_count }})
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% if current_status == 'Resolved' %}active{% endif %}" href="{{ url_for('agent_dashboard', status='Resolved') }}">
-      Resolved ({{ resolved_count }})
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% if current_status == 'Closed' %}active{% endif %}" href="{{ url_for('agent_dashboard', status='Closed') }}">
-      Closed ({{ closed_count }})
-    </a>
-  </li>
+  {% endfor %}
 </ul>
 
-<!-- Ticket Table -->
-<table class="table table-bordered">
-  <thead>
+<!-- 🎫 Ticket Table -->
+<table class="table table-bordered table-striped">
+  <thead class="table-light">
     <tr>
       <th>ID</th>
       <th>Subject</th>
       <th>User</th>
+      <th>Category</th>
       <th>Status</th>
       <th>Created At</th>
       <th>Action</th>
@@ -55,14 +54,29 @@
       <td>{{ ticket.id }}</td>
       <td>{{ ticket.subject }}</td>
       <td>{{ ticket.user_name }}</td>
-      <td>{{ ticket.status }}</td>
+      <td>{{ ticket.category or '—' }}</td>
+      <td>
+        {% if ticket.status == 'Open' %}
+          <span class="badge bg-danger">Open</span>
+        {% elif ticket.status == 'In Progress' %}
+          <span class="badge bg-warning text-dark">In Progress</span>
+        {% elif ticket.status == 'Resolved' %}
+          <span class="badge bg-success">Resolved</span>
+        {% elif ticket.status == 'Closed' %}
+          <span class="badge bg-secondary">Closed</span>
+        {% else %}
+          {{ ticket.status }}
+        {% endif %}
+      </td>
       <td>{{ ticket.created_at.strftime('%Y-%m-%d') }}</td>
       <td>
         <a href="{{ url_for('agent_ticket_detail', ticket_id=ticket.id) }}" class="btn btn-sm btn-info">View & Update</a>
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="6" class="text-center">No tickets found for this status.</td></tr>
+    <tr>
+      <td colspan="7" class="text-center">No tickets found for this filter.</td>
+    </tr>
     {% endfor %}
   </tbody>
 </table>

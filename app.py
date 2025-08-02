@@ -263,6 +263,12 @@ def dashboard():
 
     tickets = query.all()
 
+    category_filter = request.args.get('category')
+    if category_filter:
+        query = query.filter(Ticket.category == category_filter)
+
+    categories = Category.query.all()  # ✅ Pass this to the template
+
     # Counts for tabs
     all_count = Ticket.query.filter_by(user_id=current_user.id).count()
     open_count = Ticket.query.filter_by(user_id=current_user.id, status='Open').count()
@@ -271,17 +277,19 @@ def dashboard():
     closed_count = Ticket.query.filter_by(user_id=current_user.id, status='Closed').count()
 
     return render_template('dashboard.html',
-                           tickets=tickets,
-                           all_count=all_count,
-                           open_count=open_count,
-                           inprogress_count=inprogress_count,
-                           resolved_count=resolved_count,
-                           closed_count=closed_count,
-                           current_status=status_filter,
-                           search=search,
-                           sort_order=sort_order,
-                           start_date=start_date,
-                           end_date=end_date)
+                       tickets=tickets,
+                       categories=categories,
+                       all_count=all_count,
+                       open_count=open_count,
+                       inprogress_count=inprogress_count,
+                       resolved_count=resolved_count,
+                       closed_count=closed_count,
+                       current_status=status_filter,
+                       search=search,
+                       sort_order=sort_order,
+                       start_date=start_date,
+                       end_date=end_date)
+
 
 
 
@@ -417,12 +425,13 @@ def toggle_user_status(user_id):
 @login_required
 @role_required('agent')
 def agent_dashboard():
-    status_filter = request.args.get('status')
+    status_filter = request.args.get('status', 'all')
     search_query = request.args.get('search', '').strip()
+    category_filter = request.args.get('category')
 
     query = Ticket.query
 
-    if status_filter and status_filter != 'all':
+    if status_filter != 'all':
         query = query.filter_by(status=status_filter)
 
     if search_query:
@@ -431,21 +440,32 @@ def agent_dashboard():
             Ticket.user_name.ilike(f"%{search_query}%")
         )
 
+    if category_filter:
+        query = query.filter_by(category=category_filter)
+
     tickets = query.order_by(Ticket.created_at.desc()).all()
 
-    # Count tickets by status
+    # Ticket status counts
     all_count = Ticket.query.count()
     open_count = Ticket.query.filter_by(status='Open').count()
     inprogress_count = Ticket.query.filter_by(status='In Progress').count()
     resolved_count = Ticket.query.filter_by(status='Resolved').count()
     closed_count = Ticket.query.filter_by(status='Closed').count()
 
-    return render_template('agent_dashboard.html', tickets=tickets,
-                           all_count=all_count, open_count=open_count,
+    categories = Category.query.order_by(Category.name.asc()).all()
+
+    return render_template('agent_dashboard.html',
+                           tickets=tickets,
+                           all_count=all_count,
+                           open_count=open_count,
                            inprogress_count=inprogress_count,
                            resolved_count=resolved_count,
                            closed_count=closed_count,
-                           current_status=status_filter or 'all')
+                           current_status=status_filter,
+                           categories=categories,
+                           selected_category=category_filter or '',
+                           search_query=search_query)
+
 
 
 @app.route('/agent/ticket/<int:ticket_id>', methods=['GET', 'POST'])

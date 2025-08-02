@@ -4,10 +4,10 @@
 <h2>Admin Dashboard</h2>
 <hr class="my-4">
 
-<!-- 🔍 Global Search -->
+<!-- 🔍 Global Search
 <form method="GET" action="{{ url_for('admin_dashboard') }}" class="mb-4">
   <input type="text" name="search" placeholder="Search users or tickets..." class="form-control" value="{{ request.args.get('search', '') }}">
-</form>
+</form> -->
 
 <!-- 👥 USER ROLE FILTER TABS -->
 <ul class="nav nav-tabs mb-3">
@@ -20,7 +20,8 @@
 
 <!-- 📋 USERS TABLE -->
 <h4>All Users</h4>
-<table class="table table-bordered mb-5">
+<input type="text" class="form-control mb-2" placeholder="Search Users..." onkeyup="filterTable('usersTable', this.value)">
+<table class="table table-bordered mb-5" id="usersTable">
   <thead class="table-light">
     <tr>
       <th>ID</th>
@@ -73,7 +74,8 @@
   </div>
 </form>
 
-<table class="table table-hover mb-5">
+<input type="text" class="form-control mb-2" placeholder="Search Categories..." onkeyup="filterTable('categoriesTable', this.value)">
+<table class="table table-hover mb-5" id="categoriesTable">
   <thead><tr><th>Category</th><th>Actions</th></tr></thead>
   <tbody>
     {% for cat in categories %}
@@ -103,7 +105,8 @@
 
 <!-- 🧾 TICKETS TABLE -->
 <h4>Tickets</h4>
-<table class="table table-striped">
+<input type="text" class="form-control mb-2" placeholder="Search Tickets..." onkeyup="filterTable('ticketsTable', this.value)">
+<table class="table table-striped" id="ticketsTable">
   <thead>
     <tr>
       <th>ID</th>
@@ -144,12 +147,12 @@
   </tbody>
 </table>
 
-
-<!-- 📊 CHARTS REPLACED WITH TABLES -->
+<!-- 📊 Ticket Counts by Category -->
 <div class="row mt-5">
   <div class="col-md-6">
     <h5>📂 Ticket Counts by Category</h5>
-    <table class="table table-bordered table-sm">
+    <input type="text" class="form-control mb-2" placeholder="Search Category Stats..." onkeyup="filterTable('categoryStatsTable', this.value)">
+    <table class="table table-bordered table-sm" id="categoryStatsTable">
       <thead><tr><th>Category</th><th>Ticket Count</th></tr></thead>
       <tbody>
         {% for cat in categories %}
@@ -158,6 +161,8 @@
       </tbody>
     </table>
   </div>
+
+  <!-- 👥 User Role Distribution -->
   <div class="col-md-6">
     <h5>👥 User Role Distribution</h5>
     <table class="table table-bordered table-sm">
@@ -170,5 +175,17 @@
     </table>
   </div>
 </div>
+
+<!-- 🔍 Table Filtering Script -->
+<script>
+function filterTable(tableId, query) {
+  const input = query.toLowerCase();
+  const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(input) ? '' : 'none';
+  });
+}
+</script>
 
 {% endblock %}
