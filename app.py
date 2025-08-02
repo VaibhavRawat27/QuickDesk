@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 from functools import wraps
+from mail_utils import init_mail, send_email
+
 
 from flask import (
     Flask, render_template, redirect, url_for, request,
@@ -22,6 +24,19 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 8 * 1024 * 1024  # 8MB
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+app.config.update(
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USERNAME='rawatvaibhav27@gmail.com',  # your Gmail address
+    MAIL_PASSWORD='javswxmalmoflmme',  # get this from Google
+    MAIL_DEFAULT_SENDER='rawatvaibhav27@gmail.com'
+)
+
+
+init_mail(app)
+
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -353,6 +368,17 @@ def create_ticket():
         for user in agents_and_admins:
             create_notification(user.id, f"📩 New ticket #{ticket.id} by {current_user.name}")
 
+                # Send email to agents and admins
+        agents_and_admins = User.query.filter(User.role.in_(['agent', 'admin'])).all()
+        emails = [u.email for u in agents_and_admins if u.email]
+        send_email(
+            subject=f"📩 New Ticket #{ticket.id} Submitted",
+            recipients=emails,
+            body=f"A new ticket was submitted by {current_user.name}.\n\nSubject: {ticket.subject}\nDescription: {ticket.description}",
+            reply_to=current_user.email  # ✅ Add this
+        )
+
+
         flash('Ticket created successfully!', "success")
 
         flash('Ticket created successfully!', "success")
@@ -520,6 +546,16 @@ def agent_ticket_detail(ticket_id):
             )
             db.session.add(reply)
         db.session.commit()
+        if status:
+            ticket.status = status
+            # ✅ Notify ticket owner about status change
+            if ticket.owner and ticket.owner.email:
+                send_email(
+                    subject=f"🔔 Ticket #{ticket.id} Status Updated",
+                    recipients=[ticket.owner.email],
+                    body=f"Hello {ticket.owner.name},\n\nYour ticket status has been updated to: {ticket.status}.\n\nThanks,\nSupport Team"
+                )
+
         flash('Ticket updated.', "success")
     replies = TicketReply.query.filter_by(ticket_id=ticket_id).order_by(TicketReply.created_at.asc()).all()
     return render_template('agent_ticket_detail.html', ticket=ticket, replies=replies)
