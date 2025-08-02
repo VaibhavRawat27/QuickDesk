@@ -38,6 +38,9 @@ class User(db.Model, UserMixin):
 
     is_active = db.Column(db.Boolean, default=True)
 
+    notifications = db.relationship('Notification', backref='user', lazy='dynamic')
+
+
     tickets = db.relationship('Ticket', backref='owner', lazy=True)
     replies = db.relationship('TicketReply', backref='author', lazy=True)
 
@@ -64,6 +67,13 @@ class Ticket(db.Model):
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Who receives the notification
+    message = db.Column(db.String(255))
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class TicketReply(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -139,6 +149,16 @@ def login():
         flash('Invalid credentials', "danger")
     return render_template('login.html')
 
+def create_notification(user_id, message):
+    notification = Notification(user_id=user_id, message=message)
+    db.session.add(notification)
+    db.session.commit()
+
+@app.route('/notifications')
+@login_required
+def notifications():
+    notifs = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    return render_template('notifications.html', notifications=notifs)
 
 
 @app.route('/admin/create-agent', methods=['POST'])
@@ -208,45 +228,60 @@ def dashboard():
         flash("Access denied.", "warning")
         return redirect(url_for('login'))
 
-    status_filter = request.args.get('status')
-    search_query = request.args.get('search', '')
+    status_filter = request.args.get('status', 'all')
+    search = request.args.get('search', '').strip()
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    sort_order = request.args.get('sort', 'desc')  # 'asc' or 'desc'
 
-    # Base query: user's tickets
     query = Ticket.query.filter_by(user_id=current_user.id)
 
-    # Filter by status
-    if status_filter and status_filter != 'all':
+    if status_filter != 'all':
         query = query.filter_by(status=status_filter)
 
-    # Search by subject
-    if search_query:
-        query = query.filter(Ticket.subject.ilike(f'%{search_query}%'))
+    if search:
+        query = query.filter(Ticket.subject.ilike(f'%{search}%'))
 
-    tickets = query.order_by(Ticket.created_at.desc()).all()
+    if start_date:
+        try:
+            start = datetime.strptime(start_date, '%Y-%m-%d')
+            query = query.filter(Ticket.created_at >= start)
+        except:
+            pass
 
-    # Tab counts (not affected by search)
+    if end_date:
+        try:
+            end = datetime.strptime(end_date, '%Y-%m-%d')
+            query = query.filter(Ticket.created_at <= end)
+        except:
+            pass
+
+    if sort_order == 'asc':
+        query = query.order_by(Ticket.created_at.asc())
+    else:
+        query = query.order_by(Ticket.created_at.desc())
+
+    tickets = query.all()
+
+    # Counts for tabs
     all_count = Ticket.query.filter_by(user_id=current_user.id).count()
     open_count = Ticket.query.filter_by(user_id=current_user.id, status='Open').count()
     inprogress_count = Ticket.query.filter_by(user_id=current_user.id, status='In Progress').count()
     resolved_count = Ticket.query.filter_by(user_id=current_user.id, status='Resolved').count()
     closed_count = Ticket.query.filter_by(user_id=current_user.id, status='Closed').count()
 
-    # 🔥 Trending tickets (latest 5 from all users)
-    trending_tickets = Ticket.query.order_by(Ticket.created_at.desc()).limit(5).all()
-
-    return render_template(
-        'dashboard.html',
-        tickets=tickets,
-        all_count=all_count,
-        open_count=open_count,
-        inprogress_count=inprogress_count,
-        resolved_count=resolved_count,
-        closed_count=closed_count,
-        current_status=status_filter or 'all',
-        search_query=search_query,
-        trending_tickets=trending_tickets
-    )
-
+    return render_template('dashboard.html',
+                           tickets=tickets,
+                           all_count=all_count,
+                           open_count=open_count,
+                           inprogress_count=inprogress_count,
+                           resolved_count=resolved_count,
+                           closed_count=closed_count,
+                           current_status=status_filter,
+                           search=search,
+                           sort_order=sort_order,
+                           start_date=start_date,
+                           end_date=end_date)
 
 
 
@@ -271,6 +306,15 @@ def create_ticket():
         )
         db.session.add(ticket)
         db.session.commit()
+       
+
+        # Notify all agents and admins
+        agents_and_admins = User.query.filter(User.role.in_(['agent', 'admin'])).all()
+        for user in agents_and_admins:
+            create_notification(user.id, f"📩 New ticket #{ticket.id} by {current_user.name}")
+
+        flash('Ticket created successfully!', "success")
+
         flash('Ticket created successfully!', "success")
         return redirect(url_for('dashboard'))
     return render_template('create_ticket.html')
@@ -374,10 +418,20 @@ def toggle_user_status(user_id):
 @role_required('agent')
 def agent_dashboard():
     status_filter = request.args.get('status')
+    search_query = request.args.get('search', '').strip()
+
+    query = Ticket.query
+
     if status_filter and status_filter != 'all':
-        tickets = Ticket.query.filter_by(status=status_filter).order_by(Ticket.created_at.desc()).all()
-    else:
-        tickets = Ticket.query.order_by(Ticket.created_at.desc()).all()
+        query = query.filter_by(status=status_filter)
+
+    if search_query:
+        query = query.filter(
+            Ticket.subject.ilike(f"%{search_query}%") |
+            Ticket.user_name.ilike(f"%{search_query}%")
+        )
+
+    tickets = query.order_by(Ticket.created_at.desc()).all()
 
     # Count tickets by status
     all_count = Ticket.query.count()
@@ -392,7 +446,6 @@ def agent_dashboard():
                            resolved_count=resolved_count,
                            closed_count=closed_count,
                            current_status=status_filter or 'all')
-
 
 
 @app.route('/agent/ticket/<int:ticket_id>', methods=['GET', 'POST'])

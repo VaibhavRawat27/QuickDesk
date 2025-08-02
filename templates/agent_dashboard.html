@@ -2,6 +2,12 @@
 {% block content %}
 <h2>Support Agent Dashboard</h2>
 
+<!-- 🔍 Search Tickets -->
+<form method="GET" action="{{ url_for('agent_dashboard') }}" class="mb-3 d-flex">
+  <input type="text" name="search" class="form-control me-2" placeholder="Search by subject or user..." value="{{ request.args.get('search', '') }}">
+  <button class="btn btn-outline-primary" type="submit">Search</button>
+</form>
+
 <!-- Filter Tabs -->
 <ul class="nav nav-pills mb-4">
   <li class="nav-item">
