@@ -1,4 +1,4 @@
-<img width="1362" height="610" alt="image" src="https://github.com/user-attachments/assets/046dbd58-fd8e-4f16-9d29-8f41021498c2" /># 📄 QuickDesk – Ticketing Helpdesk System
+## QuickDesk
 
 A modern, role-based support ticketing platform for organizations. QuickDesk lets users (employees) create support tickets, while agents and admins manage and resolve them through a streamlined dashboard.
 
