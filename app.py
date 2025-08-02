@@ -36,6 +36,8 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(50), default='user')
 
+    is_active = db.Column(db.Boolean, default=True)
+
     tickets = db.relationship('Ticket', backref='owner', lazy=True)
     replies = db.relationship('TicketReply', backref='author', lazy=True)
 
@@ -59,6 +61,9 @@ class Ticket(db.Model):
 
     replies = db.relationship('TicketReply', backref='ticket', lazy=True)
 
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
 
 class TicketReply(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -134,6 +139,59 @@ def login():
         flash('Invalid credentials', "danger")
     return render_template('login.html')
 
+
+
+@app.route('/admin/create-agent', methods=['POST'])
+@login_required
+@role_required('admin')
+def create_agent():
+    name = request.form['name']
+    email = request.form['email']
+    password = request.form['password']
+
+    if User.query.filter_by(email=email).first():
+        flash("Email already exists.", "danger")
+        return redirect(url_for('admin_dashboard'))
+
+    new_agent = User(name=name, email=email, role='agent')
+    new_agent.set_password(password)
+    db.session.add(new_agent)
+    db.session.commit()
+
+    flash("Support agent created successfully.", "success")
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/add-category', methods=['POST'])
+@login_required
+@role_required('admin')
+def add_category():
+    name = request.form.get('category')
+    if name and not Category.query.filter_by(name=name).first():
+        db.session.add(Category(name=name))
+        db.session.commit()
+        flash("Category added.", "success")
+    else:
+        flash("Category already exists or invalid.", "warning")
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/delete-category/<int:category_id>')
+@login_required
+@role_required('admin')
+def delete_category(category_id):
+    category = Category.query.get_or_404(category_id)
+    db.session.delete(category)
+    db.session.commit()
+    flash("Category deleted.", "info")
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/category/<string:category>')
+@login_required
+@role_required('admin')
+def filter_by_category(category):
+    tickets = Ticket.query.filter_by(category=category).order_by(Ticket.created_at.desc()).all()
+    return render_template('admin_dashboard.html', tickets=tickets, filtered_category=category)
 
 
 @app.route('/logout')
@@ -256,6 +314,9 @@ def admin_dashboard():
     admin_count = User.query.filter_by(role='admin').count()
     total_users = User.query.count()
 
+   
+    categories = Category.query.order_by(Category.name.asc()).all()
+
     return render_template('admin_dashboard.html',
                            users=users,
                            tickets=tickets,
@@ -269,9 +330,23 @@ def admin_dashboard():
                            total_users=total_users,
                            employee_count=employee_count,
                            agent_count=agent_count,
-                           admin_count=admin_count)
+                           admin_count=admin_count,
+                           categories=categories)  
 
 
+@app.route('/admin/user/<int:user_id>/toggle_status')
+@login_required
+@role_required('admin')
+def toggle_user_status(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.role == 'admin':
+        flash("Cannot deactivate another admin.", "danger")
+        return redirect(url_for('admin_dashboard'))
+
+    user.is_active = not user.is_active
+    db.session.commit()
+    flash(f"User {'activated' if user.is_active else 'deactivated'}.", "success")
+    return redirect(url_for('admin_dashboard'))
 
 
 @app.route('/agent')
@@ -346,6 +421,26 @@ def create_default_users():
     print("🔑 admin@quick.com / admin")
     print("🔑 agent@quick.com / agent")
 
+@app.cli.command("create-default-categories")
+def create_default_categories():
+    defaults = ['Technical', 'Billing', 'General']
+    added = 0
+    for name in defaults:
+        if not Category.query.filter_by(name=name).first():
+            db.session.add(Category(name=name))
+            added += 1
+    db.session.commit()
+    if added:
+        print(f"✅ Added {added} default categories: {', '.join(defaults)}")
+    else:
+        print("ℹ️ Default categories already exist.")
+
+@app.route('/ticket/<int:ticket_id>')
+@login_required
+@role_required('admin')  # Optional: restrict to admin or agent
+def view_ticket(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
+    return render_template('view_ticket.html', ticket=ticket)
 
 # --- Entry Point ---
 if __name__ == '__main__':
