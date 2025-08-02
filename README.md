@@ -199,7 +199,9 @@ User → Create Ticket → Assigned to Agent → Agent Responds → Status Updat
 
 ---
 
-## 🙌 Contribution
+## 🙌 Declaration & Acknowledgement 
 
-Feel free to fork and contribute. PRs are welcome!  
-Make sure to follow the existing folder structure and coding style.
+I have completed this project during odoo x cgc hackathon on 2nd August 2025 during time spam of 9 am to 5 pm.
+
+I acknowledge i have used internet and ai tools, but these tools are only used to do research. I am well aware of all the code i used and know what it work exactly.
+
