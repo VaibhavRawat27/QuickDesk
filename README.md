@@ -13,6 +13,12 @@ and support teams without unnecessary complexity
 
 ---
 
+## Architecture
+
+<img width="661" height="493" alt="archiecture" src="https://github.com/user-attachments/assets/85597443-35b4-4abd-ae53-f9feb820ea97" />
+
+--- 
+
 ## Users
 
 - End Users (Employees/Customers): Can create and track their tickets.
