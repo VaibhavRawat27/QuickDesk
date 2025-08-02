@@ -148,10 +148,10 @@ Then visit: `http://127.0.0.1:5000/`
 ### Ticket Lifecycle
 ```
 User → Create Ticket → Assigned to Agent → Agent Responds → Status Updated → Email Notifications
+```
 
 <img width="396" height="241" alt="Ticket-LifeCycle" src="https://github.com/user-attachments/assets/5872ea52-0fbd-4f74-a58f-b7e783633f35" />
 
-```
 
 ### Email Notifications
 - Sent via `Flask-Mail` on:
