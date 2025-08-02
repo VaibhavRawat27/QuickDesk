@@ -639,22 +639,22 @@ def uploaded_file(filename):
 # CLI helper to create default users
 @app.cli.command("create-default-users")
 def create_default_users():
-    if not User.query.filter_by(email='admin@quick.com').first():
-        admin = User(name='Admin', email='admin@quick.com', role='admin')
+    if not User.query.filter_by(email='admin@quickdesk.com').first():
+        admin = User(name='Admin', email='admin@quickdesk.com', role='admin')
         admin.set_password('admin')
         db.session.add(admin)
-    if not User.query.filter_by(email='agent@quick.com').first():
-        agent = User(name='Agent', email='agent@quick.com', role='agent')
+    if not User.query.filter_by(email='agent@quickdesk.com').first():
+        agent = User(name='Elan', email='agent@quickdesk.com', role='agent')
         agent.set_password('agent')
         db.session.add(agent)
     db.session.commit()
     print("✅ Default admin and agent created:")
-    print("🔑 admin@quick.com / admin")
-    print("🔑 agent@quick.com / agent")
+    print("🔑 admin@quickdesk.com / admin")
+    print("🔑 agent@quickdesk.com / agent")
 
 @app.cli.command("create-default-categories")
 def create_default_categories():
-    defaults = ['Technical', 'Billing', 'General']
+    defaults = ['Technical', 'Billing', 'General', 'Infrastructure', 'Other']
     added = 0
     for name in defaults:
         if not Category.query.filter_by(name=name).first():
