@@ -15,6 +15,8 @@ and support teams without unnecessary complexity
 
 ## Snapshots
 
+Find video here: https://drive.google.com/drive/folders/1D15lU-UeEJDm_eVxiCsQSD4knRSrO9aX
+
 <img width="1365" height="616" alt="image" src="https://github.com/user-attachments/assets/cc15ab9c-03df-4655-a8c0-6780c80b5059" />
 
 <img width="1356" height="610" alt="image" src="https://github.com/user-attachments/assets/51f68ebc-c114-42c4-ba8c-831ff725894d" />
